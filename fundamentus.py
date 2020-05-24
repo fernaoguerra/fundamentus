@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import requests
 from bs4 import BeautifulSoup
-# from lxml.html import fragment_fromstring
-# from collections import OrderedDict
 import json
 from datetime import date
 from datetime import datetime
