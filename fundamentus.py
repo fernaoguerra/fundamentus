@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 import json
 from datetime import date
 from datetime import datetime
+from tqdm import tqdm
+import pandas as pd
+import ast
 
 today = datetime.today()
 
@@ -21,13 +24,14 @@ def get_data():
         stocks = fundamentus_file.read().split()
 
     stocks_info = []
-    for stock in stocks:
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+    for stock in tqdm(stocks):
         try:
             print(stock)
             # print("Getting data for Stock {}".format(stock))
             stock_url = "{}detalhes.php?papel={}".format("http://fundamentus.com.br/", stock)
             #stock_url = ("http://fundamentus.com.br/" + str(stock))
-            page = requests.get(stock_url)
+            page = requests.get(stock_url, headers=headers)
             html = BeautifulSoup(page.text, 'html.parser')
 
             # Tabelas
@@ -145,11 +149,27 @@ def get_data():
     #print(json.dumps(stocks_info))
     data = ""
     for x in stocks_info:
-        data = data+(json.dumps(x)+"\n")
+        data = data+(json.dumps(x)+",\n")
 
+#         Ajuste no "fechamento" das tags do Json
     with open('data2.json', 'w', encoding='utf-8') as f:
+        f.write('[')
         f.write(data)
+        f.write(']')
         f.close()
+
+    # AJUSTES NO ARQUIVO FINAL
+#     ALTERAÇÃO DO RETORNO DO PROCESSO PARA UM DATAFRAME
+    with open('data2.json', "r+", encoding='utf-8') as json_file: 
+        x = json_file.read()
+
+        json_file.seek(0)
+        json_file.truncate()
+        json_file.write(x.replace(',\n]', ']'))
+
+        y = ast.literal_eval(x.replace(',\n]', ']')) 
+
+        data = pd.DataFrame.from_dict(y)
 
     print(data)
     # return json.dumps(stocks_info, indent=4)
