@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import json
 from datetime import date
 from datetime import datetime
+import pandas as pd
 
 today = datetime.today()
 
@@ -27,16 +28,18 @@ def get_data():
             # print("Getting data for Stock {}".format(stock))
             stock_url = "{}detalhes.php?papel={}".format("http://fundamentus.com.br/", stock)
             #stock_url = ("http://fundamentus.com.br/" + str(stock))
-            page = requests.get(stock_url)
+            headers =  { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36' }
+            page = requests.get(stock_url, headers=headers)
             html = BeautifulSoup(page.text, 'html.parser')
 
             # Tabelas
             # 0 - Cotação
             tables = html.select("table.w728")
+
             #print(tables)
-            print (extract_data_from(tables[0], 8))
+            # print ("Descrição: ", extract_data_from(tables[0], 8))
             if extract_data_from(tables[0], 8) == "Bancos":
-                print("é banco")
+                # print("é banco")
 
                 stocks_info.append({
                     'scraped_date': str(scraped_date),
@@ -143,15 +146,29 @@ def get_data():
 
         except Exception as ex: print(ex)
     #print(json.dumps(stocks_info))
-    data = ""
-    for x in stocks_info:
-        data = data+(json.dumps(x)+"\n")
+    
+    data = "["
+    for x in stocks_info[:-1]:
+        data = data+(json.dumps(x)+",\n")
+    data += f"{json.dumps(stocks_info[-1])}]"
 
-    with open('data2.json', 'w', encoding='utf-8') as f:
+
+    json_filename = 'data2.json'
+    with open(json_filename, 'w', encoding='utf-8') as f:
         f.write(data)
         f.close()
 
-    print(data)
+    converter_para_excel = True
+    if converter_para_excel:
+        try:
+            csv_filename = 'data2.csv'
+            df = pd.read_json(json_filename)
+            df.to_csv (csv_filename, index = None)
+        except Exception as ex:
+            print(ex)
+
+    print(f"Processamento completo: Ver {json_filename}")
+    # print(data)
     # return json.dumps(stocks_info, indent=4)
     return data
 
