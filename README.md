@@ -5,3 +5,4 @@ Simple Api using Fundamentus website data / API simples usando os dados do site 
 pip3 install requests
 pip3 install beautifulsoup4
 pip3 install flask 
+pip3 install pandas
