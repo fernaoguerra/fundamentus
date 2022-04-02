@@ -27,7 +27,8 @@ def get_data():
             # print("Getting data for Stock {}".format(stock))
             stock_url = "{}detalhes.php?papel={}".format("http://fundamentus.com.br/", stock)
             #stock_url = ("http://fundamentus.com.br/" + str(stock))
-            page = requests.get(stock_url)
+            headers =  { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36' }
+            page = requests.get(stock_url, headers=headers)
             html = BeautifulSoup(page.text, 'html.parser')
 
             # Tabelas
